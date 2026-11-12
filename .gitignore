@@ -1,0 +1,26 @@
+# Local environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+# Secrets and private game/session data
+.env
+.env.*
+!.env.example
+data/
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+# Local backups and editor files
+*.zip
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+AI_CALLS.txt
+ONLINE_SETUP.txt
