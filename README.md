@@ -4,6 +4,14 @@ A software engineering project by **Tinglu Ren**.
 
 A browser-based Japanese Mahjong game built with Python, FastAPI, and JavaScript. Play against three heuristic AI opponents, with automated scoring and persistent browser sessions.
 
+
+## Live Demo
+
+[Play Riichi Mahjong](https://tinglus-riichi-mahjong-game.onrender.com)
+
+Note: The demo uses free hosting. The first visit after inactivity may take about a minute to load.
+
+
 ## Features
 
 - Three AI opponents that evaluate discards and support Chi, Pon, Kan, and Riichi.
