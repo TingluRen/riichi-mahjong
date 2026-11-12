@@ -146,11 +146,16 @@ http_action = ContextVar("mahjong_http_action", default=False)
 async def mark_http_actions(request, call_next):
     # Mark modifying API requests for the durable-action wrapper.
     token = http_action.set(request.method == "POST" and request.url.path.startswith("/api/"))
+    incremental_token = incremental_turns.set(request.headers.get("x-mahjong-step") == "1")
     try:
         return await call_next(request)
     finally:
         http_action.reset(token)
+        incremental_turns.reset(incremental_token)
 
+
+incremental_turns = ContextVar("incremental_turns", default=False)
+turns_pending = ContextVar("turns_pending", default=False)
 
 playback_frames = ContextVar("mahjong_playback_frames", default=None)
 
@@ -172,7 +177,10 @@ def advance_until_human(game):
         finally:
             state.game = previous
 
-    return run_computer_turns(game, observer=observe)
+    pending = run_computer_turns(game, observer=observe,
+                                 max_steps=1 if incremental_turns.get() else None)
+    turns_pending.set(bool(pending))
+    return pending
 
 
 def durable_action(function):
@@ -199,14 +207,18 @@ def durable_action(function):
             try:
                 # Playback contains public views only; never send concealed AI tiles.
                 token = playback_frames.set([])
+                pending_token = turns_pending.set(False)
                 try:
                     result = function(*args, **kwargs)
                     frames = playback_frames.get()
                     target = result.get("game", result)
+                    if incremental_turns.get():
+                        target["turns_pending"] = turns_pending.get()
                     if frames and isinstance(target, dict):
                         target["playback_frames"] = frames
                 finally:
                     playback_frames.reset(token)
+                    turns_pending.reset(pending_token)
                 try:
                     current_state().game_store.save(current_state().game)
                 except (OSError, InvalidSaveError) as error:
@@ -728,4 +740,12 @@ def abort_nine_terminals():
         declare_kyuushu_kyuuhai(current_state().game, current_state().game["human_player_index"])
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
+    return get_player_view()
+
+
+@app.post("/api/advance")
+@durable_action
+def advance_one_step():
+    """Resume a committed game; engine rules still control all human decisions."""
+    advance_until_human(current_state().game)
     return get_player_view()

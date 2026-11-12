@@ -1,5 +1,6 @@
 import unittest
 from copy import deepcopy
+from unittest.mock import patch
 
 from main import (
     create_game,
@@ -12,6 +13,12 @@ from main import (
 
 
 class PonTests(unittest.TestCase):
+    def setUp(self):
+        # These fixtures test Pon mechanics, not randomly dealt rival AI claims.
+        rival = patch("main.get_ai_discard_claim", return_value=None)
+        rival.start()
+        self.addCleanup(rival.stop)
+
     def make_game(self):
         game = create_game()
 

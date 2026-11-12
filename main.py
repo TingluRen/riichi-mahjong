@@ -735,9 +735,13 @@ def perform_ai_discard(game, player_index):
     }
 
 
-def advance_until_human(game, observer=None):
+def advance_until_human(game, observer=None, max_steps=None):
     """Run computer turns until the human has a decision or the hand ends."""
+    steps = 0
     while game["phase"] != "ended":
+        if max_steps is not None and steps >= max_steps:
+            return True
+        steps += 1
         # Record public turn boundaries for browser playback, without delaying saves.
         if observer is not None:
             observer(game)

@@ -418,6 +418,7 @@ html { scrollbar-gutter:stable; }
     .app-header #save-status { grid-column:1/-1; }
     .app-header .header-actions { grid-column:1/-1; grid-row:5; justify-self:end; margin-top:8px; }
 }
+    #save-status { display:none; }
     </style>
 </head>
 
@@ -557,12 +558,10 @@ html { scrollbar-gutter:stable; }
         // Parse one API response and turn server errors into a readable message.
         async function request(url, method = "GET", body) {
             // GET requests have no body; actions send JSON when arguments are needed.
-            const options = { method };
+            const options = { method, headers: { "X-Mahjong-Step": "1" } };
 
             if (body !== undefined) {
-                options.headers = {
-                    "Content-Type": "application/json"
-                };
+                options.headers["Content-Type"] = "application/json";
                 options.body = JSON.stringify(body);
             }
 
@@ -603,6 +602,15 @@ html { scrollbar-gutter:stable; }
                         await new Promise(resolve => setTimeout(resolve, 700));
                     }
                 }
+            }
+            if (game.turns_pending) {
+                render(game);
+                document.querySelectorAll(".mahjong-table button").forEach(button => { button.disabled = true; });
+                // Show each committed step before asking the server to compute the next.
+                await new Promise(resolve => setTimeout(resolve, 0));
+                const next = await request("/api/advance", "POST");
+                if (data.game) data.game = next.game || next;
+                else return next.game || next;
             }
             return data;
         }

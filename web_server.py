@@ -61,10 +61,18 @@ def visitor_endpoint(function):
             with visitor_store.session(request.cookies.get(COOKIE_NAME)) as (token, state):
                 state_token = server.request_state.set(state)
                 action_token = server.http_action.set(request.method == "POST")
+                incremental_token = server.incremental_turns.set(
+                    request.headers.get("x-mahjong-step") == "1")
                 try:
                     result = function(**kwargs)
+                    if request.method == "GET" and server.incremental_turns.get():
+                        # A refresh can arrive between committed AI steps.
+                        result["turns_pending"] = (state.game["phase"] != "ended" and not (
+                            state.game["phase"] == "discard" and
+                            state.game["current_player_index"] == state.game["human_player_index"]))
                     response = JSONResponse(result)
                 finally:
+                    server.incremental_turns.reset(incremental_token)
                     server.http_action.reset(action_token)
                     server.request_state.reset(state_token)
             # Return success only after the database commit has completed.

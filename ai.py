@@ -18,142 +18,142 @@ TILE_INDEX = {
 
 
 def _standard_shanten(counts, fixed_groups):
-    """Calculate standard four-groups-and-a-pair Shanten."""
+    return _search_shanten(tuple(counts), 0, 0, 0, fixed_groups)
 
-    @lru_cache(maxsize=None)
-    def search(state, groups, partial_groups, has_pair):
-        # Start with the first remaining tile to avoid exploring group order permutations.
-        first = next(
-            (index for index, count in enumerate(state) if count),
-            None,
-        )
 
-        # At the end of a branch, count only partial groups that still fit the hand.
-        if first is None:
-            usable_partials = min(
-                partial_groups,
-                4 - fixed_groups - groups,
-            )
+# Reuse structural subproblems across draws/calls; bounded for small hosts.
+@lru_cache(maxsize=32768)
+def _search_shanten(state, groups, partial_groups, has_pair, fixed_groups):
+    # Start with the first remaining tile to avoid exploring group order permutations.
+    first = next(
+        (index for index, count in enumerate(state) if count),
+        None,
+    )
 
-            return (
-                8
-                - 2 * (fixed_groups + groups)
-                - usable_partials
-                - has_pair
-            )
-
-        remaining = list(state)
-
-        # Remove a candidate group, recurse, then restore counts for the next choice.
-        def branch(indices, new_groups, new_partials, new_pair):
-            for index in indices:
-                remaining[index] -= 1
-
-            result = search(
-                tuple(remaining),
-                new_groups,
-                new_partials,
-                new_pair,
-            )
-
-            for index in indices:
-                remaining[index] += 1
-
-            return result
-
-        # Leave this tile unused in the chosen interpretation.
-        best = branch(
-            [first],
-            groups,
+    # At the end of a branch, count only partial groups that still fit the hand.
+    if first is None:
+        usable_partials = min(
             partial_groups,
-            has_pair,
+            4 - fixed_groups - groups,
         )
 
-        can_add_group = fixed_groups + groups < 4
+        return (
+            8
+            - 2 * (fixed_groups + groups)
+            - usable_partials
+            - has_pair
+        )
 
-        # Try using three copies as a complete triplet.
-        if can_add_group and state[first] >= 3:
+    remaining = list(state)
+
+    # Remove a candidate group, recurse, then restore counts for the next choice.
+    def branch(indices, new_groups, new_partials, new_pair):
+        for index in indices:
+            remaining[index] -= 1
+
+        result = _search_shanten(
+            tuple(remaining),
+            new_groups,
+            new_partials,
+            new_pair,
+            fixed_groups,
+        )
+
+        for index in indices:
+            remaining[index] += 1
+
+        return result
+
+    # Leave this tile unused in the chosen interpretation.
+    best = branch(
+        [first],
+        groups,
+        partial_groups,
+        has_pair,
+    )
+
+    can_add_group = fixed_groups + groups < 4
+
+    # Try using three copies as a complete triplet.
+    if can_add_group and state[first] >= 3:
+        best = min(
+            best,
+            branch(
+                [first] * 3,
+                groups + 1,
+                partial_groups,
+                has_pair,
+            ),
+        )
+
+    # Try a complete sequence without crossing a suit boundary.
+    if (
+        can_add_group
+        and first < 27
+        and first % 9 <= 6
+        and state[first + 1]
+        and state[first + 2]
+    ):
+        best = min(
+            best,
+            branch(
+                [first, first + 1, first + 2],
+                groups + 1,
+                partial_groups,
+                has_pair,
+            ),
+        )
+
+    # A pair can be the head or an incomplete group; explore both uses.
+    if state[first] >= 2:
+        if not has_pair:
             best = min(
                 best,
                 branch(
-                    [first] * 3,
-                    groups + 1,
+                    [first, first],
+                    groups,
                     partial_groups,
+                    1,
+                ),
+            )
+
+        if partial_groups < 4 - fixed_groups:
+            best = min(
+                best,
+                branch(
+                    [first, first],
+                    groups,
+                    partial_groups + 1,
                     has_pair,
                 ),
             )
 
-        # Try a complete sequence without crossing a suit boundary.
-        if (
-            can_add_group
-            and first < 27
-            and first % 9 <= 6
-            and state[first + 1]
-            and state[first + 2]
-        ):
+    if first < 27 and partial_groups < 4 - fixed_groups:
+        # Adjacent tiles, such as 45m.
+        if first % 9 <= 7 and state[first + 1]:
             best = min(
                 best,
                 branch(
-                    [first, first + 1, first + 2],
-                    groups + 1,
-                    partial_groups,
+                    [first, first + 1],
+                    groups,
+                    partial_groups + 1,
                     has_pair,
                 ),
             )
 
-        # A pair can be the head or an incomplete group; explore both uses.
-        if state[first] >= 2:
-            if not has_pair:
-                best = min(
-                    best,
-                    branch(
-                        [first, first],
-                        groups,
-                        partial_groups,
-                        1,
-                    ),
-                )
+        # Gapped tiles, such as 46m.
+        if first % 9 <= 6 and state[first + 2]:
+            best = min(
+                best,
+                branch(
+                    [first, first + 2],
+                    groups,
+                    partial_groups + 1,
+                    has_pair,
+                ),
+            )
 
-            if partial_groups < 4 - fixed_groups:
-                best = min(
-                    best,
-                    branch(
-                        [first, first],
-                        groups,
-                        partial_groups + 1,
-                        has_pair,
-                    ),
-                )
-
-        if first < 27 and partial_groups < 4 - fixed_groups:
-            # Adjacent tiles, such as 45m.
-            if first % 9 <= 7 and state[first + 1]:
-                best = min(
-                    best,
-                    branch(
-                        [first, first + 1],
-                        groups,
-                        partial_groups + 1,
-                        has_pair,
-                    ),
-                )
-
-            # Gapped tiles, such as 46m.
-            if first % 9 <= 6 and state[first + 2]:
-                best = min(
-                    best,
-                    branch(
-                        [first, first + 2],
-                        groups,
-                        partial_groups + 1,
-                        has_pair,
-                    ),
-                )
-
-        return best
-
-    return search(tuple(counts), 0, 0, 0)
-
+    return best
 
 @normalized_inputs('hand', 'melds')
 def calculate_shanten(hand, melds=None):
