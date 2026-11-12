@@ -1130,7 +1130,6 @@ html { scrollbar-gutter:stable; }
 
         // Refresh the table from one authoritative server snapshot.
         function render(game) {
-            document.getElementById("save-status").textContent = game.save_notice || "Progress is saved automatically on this computer.";
             // Stop any old overlay before comparing the next pair of snapshots.
             cancelDiscardMotion();
             const discardMoves = collectDiscardMotion(latestGame, game);
