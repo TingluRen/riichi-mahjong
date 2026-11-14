@@ -1,32 +1,35 @@
-# Local environments and generated files
+# Python environments and caches
 .venv/
+.venv-build/
 venv/
 __pycache__/
 *.py[cod]
-.pytest_cache/
-.coverage
-htmlcov/
-# Secrets and private game/session data
+
+# Build output — distribute EXE through Releases
+build/
+dist/
+*.spec
+*.exe
+
+# Local saves and secrets
+data/
 .env
 .env.*
 !.env.example
-data/
-*.sqlite
 *.sqlite3
 *.sqlite3-*
-*.db
-# Local backups and editor files
+*.log
+
+# Backups and personal notes
 *.zip
+AI_CALLS.txt
+ONLINE_SETUP.txt
+PERFORMANCE_UPDATE.txt
+UPDATE.txt
+EXE_SETUP.md
+
+# Editor and operating system files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
-
-AI_CALLS.txt
-ONLINE_SETUP.txt
-
-# Local exe
-.venv-build/
-build/
-dist/
-*.spec
