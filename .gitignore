@@ -24,3 +24,9 @@ Thumbs.db
 
 AI_CALLS.txt
 ONLINE_SETUP.txt
+
+# Local exe
+.venv-build/
+build/
+dist/
+*.spec

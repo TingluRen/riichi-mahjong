@@ -5,11 +5,27 @@ A software engineering project by **Tinglu Ren**.
 A browser-based Japanese Mahjong game built with Python, FastAPI, and JavaScript. Play against three heuristic AI opponents, with automated scoring and persistent browser sessions.
 
 
-## Live Demo
+## Play
 
-[Play Riichi Mahjong](https://tinglus-riichi-mahjong-game.onrender.com)
+- [Play online](https://tinglus-riichi-mahjong-game.onrender.com)
+- [Download for Windows](https://github.com/TingluRen/riichi-mahjong/releases/latest/download/RiichiMahjong.exe)
+
+
+### Web version
+
+[Play Riichi Mahjong online](https://tinglus-riichi-mahjong-game.onrender.com)
 
 Note: The demo uses free hosting. The first visit after inactivity may take about a minute to load.
+
+
+### Windows version
+
+Download and double-click `RiichiMahjong.exe`.
+Python installation is not required.
+
+Keep the launcher window open while playing.
+Press Ctrl+C in that window to quit.
+The Windows version runs locally and uses separate saves from the online demo.
 
 
 ## Features
