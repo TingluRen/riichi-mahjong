@@ -28,6 +28,11 @@ Press Ctrl+C in that window to quit.
 The Windows version runs locally and uses separate saves from the online demo.
 
 
+## How to Play Riichi Mahjong
+
+[Learn the rules of Riichi Mahjong](https://riichimahjong.net/rules/)
+
+
 ## Features
 
 - Three AI opponents that evaluate discards and support Chi, Pon, Kan, and Riichi.
