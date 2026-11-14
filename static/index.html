@@ -422,6 +422,27 @@ html { scrollbar-gutter:stable; }
 .status-bar {
     display: none;
 }
+/* Keep Auto Win help beside the controls, immediately above the table. */
+.app-header .auto-win-note {
+    grid-column:1; grid-row:4; align-self:end;
+    margin:0; padding:0 0 2px; font-size:12px; line-height:1.45;
+    color:var(--muted, #b9d0c6); min-width:0;
+}
+@media(max-width:700px) {
+    .app-header .auto-win-note { grid-column:1/-1; grid-row:4; }
+}
+/* Keep the project text and help together; controls no longer stretch the note row. */
+.app-header { align-items:end; }
+.app-header > div:first-child { display:block; min-width:0; grid-column:1; grid-row:1; }
+.app-header .eyebrow { margin:0 0 4px; }
+.app-header h1 { margin:0 0 8px; }
+.app-header .project-description { margin:0 0 5px; }
+.app-header .auto-win-note { margin:0; padding-bottom:2px; }
+.app-header .header-actions { grid-column:2; grid-row:1; align-self:end; }
+@media(max-width:700px) {
+    .app-header > div:first-child { grid-column:1/-1; }
+    .app-header .header-actions { grid-column:1/-1; grid-row:2; margin-top:8px; }
+}
     </style>
 </head>
 
@@ -431,7 +452,7 @@ html { scrollbar-gutter:stable; }
 <div class="app">
 <!-- Match actions remain available above the table. -->
     <header class="app-header">
-        <div><p class="eyebrow">A software engineering project by Tinglu Ren</p><h1>Riichi Mahjong</h1><p class="project-description">A browser-based Japanese Mahjong game built with Python, FastAPI, and JavaScript. Features three AI opponents, automated scoring, and persistent player sessions.</p><p id="save-status" class="result-detail" role="status"></p></div>
+        <div><p class="eyebrow">A software engineering project by Tinglu Ren</p><h1>Riichi Mahjong</h1><p class="project-description">A browser-based Japanese Mahjong game built with Python, FastAPI, and JavaScript. Features three AI opponents, automated scoring, and persistent player sessions.</p><p class="auto-win-note">* Auto Win: On automatically accepts legal Ron and Tsumo wins; Off lets you choose manually.</p><p id="save-status" class="result-detail" role="status"></p></div>
         <div class="header-actions">
             <button id="auto-win" aria-pressed="false" title="Automatically accept legal Ron and Tsumo wins">Auto Win: Off</button><button id="new-game" disabled>New Game</button>
             <button id="next-hand" hidden disabled>Next Hand</button>
